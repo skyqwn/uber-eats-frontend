@@ -6,20 +6,20 @@ import { useMutation } from "@apollo/client";
 import uberLogo from "../images/ubereats.svg";
 import Button from "../components/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { gql } from "../__generated__/gql";
+import { graphql } from "../__generated__/gql";
 import {
   CreateAccountMutation,
   CreateAccountMutationVariables,
   UserRole,
 } from "../__generated__/graphql";
 
-const CREATE_ACCOUNT_MUTATION = gql(`
- mutation createAccount($createAccountInput: CreateAccountInput!){
-   createAccount(input: $createAccountInput){
-    ok
-    error
+const CREATE_ACCOUNT_MUTATION = graphql(`
+  mutation createAccount($createAccountInput: CreateAccountInput!) {
+    createAccount(input: $createAccountInput) {
+      ok
+      error
     }
-   }
+  }
 `);
 
 interface ICreateAccountForm {

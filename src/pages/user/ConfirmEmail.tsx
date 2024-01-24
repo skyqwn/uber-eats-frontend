@@ -1,39 +1,63 @@
 import React, { useEffect } from "react";
-import { gql } from "../../__generated__";
-import { useMutation } from "@apollo/client";
+import { graphql } from "../../__generated__";
+import { gql, useApolloClient, useMutation } from "@apollo/client";
 import {
   VerifyEmailMutation,
   VerifyEmailMutationVariables,
 } from "../../__generated__/graphql";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import useMe from "../../hooks/useMe";
 
-const VERIFY_EMAIL_MUTATION = gql(`
-    mutation verifyEmail($input:VerifyEmailInput!){
-        verifyEmail(input:$input){
-            ok
-            error
-        }
+const VERIFY_EMAIL_MUTATION = graphql(`
+  mutation verifyEmail($input: VerifyEmailInput!) {
+    verifyEmail(input: $input) {
+      ok
+      error
     }
+  }
 `);
 
 const ConfirmEmail = () => {
-  const [verifyEmail, { loading }] = useMutation<
+  const { data: userData } = useMe();
+  const client = useApolloClient();
+  const navagate = useNavigate();
+  const onCompleted = (data: VerifyEmailMutation) => {
+    {
+      const {
+        verifyEmail: { ok },
+      } = data;
+      if (ok && userData?.me.id) {
+        client.writeFragment({
+          id: `User:${userData?.me.id}`,
+          fragment: gql`
+            fragment VerifiedUser on User {
+              verified
+            }
+          `,
+          data: {
+            verified: true,
+          },
+        });
+        navagate("/");
+      }
+    }
+  };
+  const [verifyEmail] = useMutation<
     VerifyEmailMutation,
     VerifyEmailMutationVariables
-  >(VERIFY_EMAIL_MUTATION);
-  const location = useLocation();
-  const param = new URLSearchParams(useLocation().search);
+  >(VERIFY_EMAIL_MUTATION, {
+    onCompleted,
+  });
 
-  console.log(param);
   useEffect(() => {
-    // const [_, code] = window.location.href.split("code=");
-    // const newLocal = verifyEmail({
-    //   variables: {
-    //     input: {
-    //       code,
-    //     },
-    //   },
-    // });
+    const [_, code] = window.location.href.split("code=");
+    verifyEmail({
+      variables: {
+        input: {
+          code,
+        },
+      },
+    });
   }, []);
   return (
     <div className="mt-52 flex flex-col items-center justify-center">

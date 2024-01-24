@@ -5,10 +5,12 @@ import NotFound from "../pages/NotFound";
 import Header from "../components/Header";
 import useMe from "../hooks/useMe";
 import ConfirmEmail from "../pages/user/ConfirmEmail";
+import EditProfile from "../pages/user/EditProfile";
 
 const ClinetRouter = [
-  <Route path="/" element={<Restaurant />} />,
-  <Route path="/confirm" element={<ConfirmEmail />} />,
+  <Route key={1} path="/" element={<Restaurant />} />,
+  <Route key={2} path="/confirm" element={<ConfirmEmail />} />,
+  <Route key={3} path="/edit-profile" element={<EditProfile />} />,
 ];
 
 export const LoggedInRouter = () => {

@@ -18,7 +18,7 @@ const Header: React.FC = () => {
         <div className="w-full px-5 xl:px-0 max-w-screen-2xl mx-auto flex items-center justify-between">
           <img src={logo} className="w-24 " alt="Uber Eats" />
           <span className="text-sm">
-            <Link to="/my-profile">
+            <Link to="/edit-profile">
               <FontAwesomeIcon icon={faUser} className="text-xl" />
             </Link>
           </span>

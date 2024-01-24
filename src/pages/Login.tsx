@@ -7,7 +7,7 @@ import FormError from "../components/FormError";
 import { useMutation } from "@apollo/client";
 import Button from "../components/Button";
 import { Link } from "react-router-dom";
-import { gql } from "../__generated__/";
+import { graphql } from "../__generated__/";
 import {
   LoginMutation,
   LoginMutationVariables,
@@ -15,7 +15,7 @@ import {
 import { authTokenVar, isLoggedInVar } from "../apollo";
 import { LOCALSTORAGE_TOKEN } from "../constant";
 
-const LOGIN_MUTATION = gql(`
+const LOGIN_MUTATION = graphql(`
   mutation login($loginInput: LoginInput!) {
     login(input: $loginInput) {
       ok
@@ -125,7 +125,6 @@ const Login = () => {
         <div>
           New to Uber?{" "}
           <Link to={"/signup"} className="text-lime-600 hover:underline">
-            {" "}
             Create an Account
           </Link>
         </div>
