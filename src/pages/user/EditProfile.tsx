@@ -3,11 +3,12 @@ import useMe from "../../hooks/useMe";
 import Button from "../../components/Button";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { graphql } from "../../__generated__";
-import { useMutation } from "@apollo/client";
+import { gql, useApolloClient, useMutation } from "@apollo/client";
 import {
   EditProfileMutation,
   EditProfileMutationVariables,
 } from "../../__generated__/graphql";
+import { Helmet } from "react-helmet-async";
 
 const EDIT_PROFILE_MUTATION = graphql(`
   mutation editProfile($input: EditProfileInput!) {
@@ -24,12 +25,32 @@ interface IFormProps {
 }
 
 const EditProfile = () => {
-  const { data: userData } = useMe();
+  const { data: userData, refetch } = useMe();
+  const client = useApolloClient();
   const onCompleted = (data: EditProfileMutation) => {
     const {
       editProfile: { ok },
     } = data;
-    if (ok) {
+    if (ok && userData) {
+      const {
+        me: { email: prevEmail, id },
+      } = userData;
+      const { email: newEmail } = getValues();
+      if (prevEmail !== newEmail) {
+        client.writeFragment({
+          id: `User:${id}`,
+          fragment: gql`
+            fragment EditedUser on User {
+              verified
+              email
+            }
+          `,
+          data: {
+            email: newEmail,
+            verified: false,
+          },
+        });
+      }
     }
   };
   const [editProfile, { loading }] = useMutation<
@@ -42,6 +63,7 @@ const EditProfile = () => {
     register,
     handleSubmit,
     formState: { isValid },
+    getValues,
   } = useForm<IFormProps>({
     defaultValues: {
       email: userData?.me.email,
@@ -60,6 +82,9 @@ const EditProfile = () => {
   };
   return (
     <div className="mt-52 flex flex-col justify-center items-center">
+      <Helmet>
+        <title>Edit Profile | Uber Eats</title>
+      </Helmet>
       <h4 className="font-semibold text-2xl mb-3">Edit Profile</h4>
       <form
         onSubmit={handleSubmit(onSubmit)}

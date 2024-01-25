@@ -8,8 +8,11 @@ const config: CodegenConfig = {
     "./src/__generated__/": {
       preset: "client",
       plugins: [],
+      overwrite: true,
       presetConfig: {
         // gqlTagName: "gqlCodegen",
+
+        fragmentMasking: false,
       },
     },
   },
