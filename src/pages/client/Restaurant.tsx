@@ -3,7 +3,7 @@ import { graphql } from "../../__generated__";
 import { useQuery } from "@apollo/client";
 import Restaurants from "../../components/Restaurant";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   RestaurantPageQuery,
@@ -16,11 +16,7 @@ const RESTAURANTS_QUERY = graphql(`
       ok
       error
       categories {
-        id
-        name
-        coverImage
-        slug
-        restaurantCount
+        ...CategoryParts
       }
     }
     restaurants(input: $input) {
@@ -79,19 +75,18 @@ const Restaurant = () => {
           <div className="max-w-screen-2xl mx-auto mt-8">
             <div className="flex justify-around max-w-sm mx-auto gap-8">
               {data?.allCategories.categories?.map((category) => (
-                <div
-                  key={category.id}
-                  className="flex flex-col group items-center cursor-pointer"
-                >
-                  <div
-                    className="w-16 h-16 bg-cover group-hover:bg-gray-100 rounded-full"
-                    style={{ backgroundImage: `url(${category.coverImage})` }}
-                  ></div>
-                  <span className="mt-1 text-sm text-center font-bold">
-                    {" "}
-                    {category.name}
-                  </span>
-                </div>
+                <Link key={category.id} to={`/category/${category.slug}`}>
+                  <div className="flex flex-col group items-center cursor-pointer">
+                    <div
+                      className="w-16 h-16 bg-cover group-hover:bg-gray-100 rounded-full"
+                      style={{ backgroundImage: `url(${category.coverImage})` }}
+                    ></div>
+                    <span className="mt-1 text-sm text-center font-bold">
+                      {" "}
+                      {category.name}
+                    </span>
+                  </div>
+                </Link>
               ))}
             </div>
             <div className="mt-16 grid md:grid-cols-3 gap-x-5 gap-y-10 ">

@@ -12,3 +12,13 @@ export const RESTAURANT_FRAGMENT = graphql(`
     isPromoted
   }
 `);
+
+export const CATEGORY_FRAGMENT = graphql(`
+  fragment CategoryParts on Category {
+    id
+    name
+    coverImage
+    slug
+    restaurantCount
+  }
+`);
