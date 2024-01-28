@@ -11,6 +11,8 @@ import Category from "../pages/client/Category";
 import DetailRestaurant from "../pages/client/DetailRestaurant";
 import MyRestaurants from "../pages/owner/MyRestaurants";
 import CreateRestaurant from "../pages/owner/CreateRestaurant";
+import MyRestaurant from "../pages/owner/MyRestaurant";
+import CreateDish from "../pages/owner/CreateDish";
 
 const clientRoutes = [
   {
@@ -50,6 +52,14 @@ const restaurantRoutes = [
   {
     path: "/add-restaurant",
     component: <CreateRestaurant />,
+  },
+  {
+    path: "/restaurant/:id",
+    component: <MyRestaurant />,
+  },
+  {
+    path: "/restaurant/:id/add-dish",
+    component: <CreateDish />,
   },
 ];
 

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { graphql } from "../../__generated__";
-import { useMutation } from "@apollo/client";
+import { useApolloClient, useMutation } from "@apollo/client";
 import {
   CreateRestaurantMutation,
   CreateRestaurantMutationVariables,
@@ -8,12 +8,16 @@ import {
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import Button from "../../components/Button";
 import { Helmet } from "react-helmet-async";
+import FormError from "../../components/FormError";
+import { MY_RESTAURANTS_QUERY } from "./MyRestaurants";
+import { useNavigate } from "react-router-dom";
 
 const CREATE_RESTAURANT_MUTATION = graphql(`
   mutation createRestaurant($input: CreateRestaurantInput!) {
     createRestaurant(input: $input) {
       ok
       error
+      restaurantId
     }
   }
 `);
@@ -22,29 +26,96 @@ interface IFormProps {
   name: string;
   address: string;
   categoryName: string;
+  file: FileList;
 }
 
 const CreateRestaurant = () => {
-  const [createRestaurantMutation, { loading, data }] = useMutation<
+  const client = useApolloClient();
+  const navigate = useNavigate();
+  const [imageUrl, setImageUrl] = useState("");
+  const onCompleted = (data: CreateRestaurantMutation) => {
+    const {
+      createRestaurant: { ok, error, restaurantId },
+    } = data;
+    if (ok) {
+      const { name, categoryName, address } = getValues();
+      setUploading(false);
+      const queryResult = client.readQuery({ query: MY_RESTAURANTS_QUERY });
+      if (!queryResult) {
+        alert("sorry u can't");
+        navigate("/");
+      }
+      if (queryResult) {
+        client.writeQuery({
+          query: MY_RESTAURANTS_QUERY,
+          data: {
+            myRestaurants: {
+              ...queryResult?.myRestaurants,
+              restaurants: [
+                {
+                  address,
+                  category: {
+                    name: categoryName,
+                    __typename: "Category",
+                  },
+                  coverImage: imageUrl,
+                  id: restaurantId,
+                  isPromoted: false,
+                  name,
+                  __typename: "Restaurant",
+                },
+                ...queryResult.myRestaurants.restaurants,
+              ],
+            },
+          },
+        });
+        navigate("/");
+      }
+    }
+  };
+  const [createRestaurantMutation, { data }] = useMutation<
     CreateRestaurantMutation,
     CreateRestaurantMutationVariables
   >(CREATE_RESTAURANT_MUTATION, {
-    variables: {
-      input: {
-        name: "",
-        coverImage: "",
-        address: "",
-        categoryName: "",
-      },
-    },
+    onCompleted,
   });
+
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isValid },
-  } = useForm<FieldValues>();
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    console.log(data);
+  } = useForm<IFormProps>();
+  const [uploading, setUploading] = useState(false);
+  const onSubmit: SubmitHandler<IFormProps> = async (data: IFormProps) => {
+    try {
+      setUploading(true);
+      const { file, name, categoryName, address } = data;
+      const actualFile = file[0];
+      const formBody = new FormData();
+      formBody.append("file", actualFile);
+      const { url: coverImage } = await (
+        await fetch("http://localhost:4000/uploads/", {
+          method: "POST",
+          body: formBody,
+          // headers: { "Content-Type": "multipart/form-data" },
+        })
+      ).json();
+      setImageUrl(coverImage);
+      createRestaurantMutation({
+        variables: {
+          input: {
+            name,
+            categoryName,
+            address,
+            coverImage,
+          },
+        },
+      });
+    } catch (error) {
+      console.log(11);
+      console.log(error);
+    }
   };
   return (
     <div className="container">
@@ -74,11 +145,22 @@ const CreateRestaurant = () => {
           type="text"
           placeholder="CategoryName"
         />
+        <div>
+          <input
+            {...register("file", { required: true })}
+            type="file"
+            name="file"
+            accept="image/*"
+          />
+        </div>
         <Button
-          loading={loading}
+          loading={uploading}
           cnaClick={isValid}
           actionText="Create Restaurant"
         />
+        {data?.createRestaurant?.error && (
+          <FormError errorMessage={data.createRestaurant.error} />
+        )}
       </form>
     </div>
   );
