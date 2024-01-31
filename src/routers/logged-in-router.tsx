@@ -13,6 +13,9 @@ import MyRestaurants from "../pages/owner/MyRestaurants";
 import CreateRestaurant from "../pages/owner/CreateRestaurant";
 import MyRestaurant from "../pages/owner/MyRestaurant";
 import CreateDish from "../pages/owner/CreateDish";
+import Order from "../pages/Order";
+import DashBoard from "../pages/driver/DashBoard";
+import { UserRole } from "../__generated__/graphql";
 
 const clientRoutes = [
   {
@@ -42,6 +45,10 @@ const commonRoutes = [
     path: "/edit-profile",
     component: <EditProfile />,
   },
+  {
+    path: "/orders/:id",
+    component: <Order />,
+  },
 ];
 
 const restaurantRoutes = [
@@ -63,6 +70,13 @@ const restaurantRoutes = [
   },
 ];
 
+const driverRoutes = [
+  {
+    path: "/",
+    component: <DashBoard />,
+  },
+];
+
 export const LoggedInRouter = () => {
   const { data, loading, error } = useMe();
   if (!data || loading || error) {
@@ -76,7 +90,7 @@ export const LoggedInRouter = () => {
     <Router>
       <Header />
       <Routes>
-        {data.me.role === "Client" &&
+        {data.me.role === UserRole.Client &&
           clientRoutes.map((route) => (
             <Route
               key={route.path}
@@ -84,8 +98,16 @@ export const LoggedInRouter = () => {
               element={route.component}
             />
           ))}
-        {data.me.role === "Owner" &&
+        {data.me.role === UserRole.Owner &&
           restaurantRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.component}
+            />
+          ))}
+        {data.me.role === UserRole.Delivery &&
+          driverRoutes.map((route) => (
             <Route
               key={route.path}
               path={route.path}
